@@ -1,3 +1,3 @@
-# Multivariate501
+# Stat 501 Multivariate Statistical Analysis
 
-This repository stores the video lectures for the ISU stat 501 course.
+
