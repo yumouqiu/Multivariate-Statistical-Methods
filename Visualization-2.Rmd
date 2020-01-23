@@ -1,0 +1,522 @@
+---
+title: "GGplot and Web-scrapping"
+author: "Yumou Qiu"
+ratio: 16x10
+output:
+  rmdshower::shower_presentation:
+    self_contained: false
+    katex: true
+    theme: ribbon
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# GGplot2
+
+## Loading class data
+
+```{r, message=FALSE, results='hide'}
+#devtools::install_github("heike/classdata")
+```
+
+```{r}
+library(classdata)
+library(ggplot2)
+```
+
+
+## Why `ggplot2`
+
+- Wildly popular package for statistical graphics: over 2.5 million downloads from CRAN in 2017 (several thousand times per day)
+- Developed by Hadley Wickham (An ISU Alumni)
+- Designed to adhere to good graphical practices
+- Constructs plots using the concept of layers
+- Supports a wide variety plot types and extensions
+- Ported to different languages, e.g. `ggpy`
+\medskip
+- http://ggplot2.org/book/ or Hadley's book *ggplot2: Elegant Graphics for Data Analysis* for reference 
+
+
+## `ggplot` Function
+
+The `ggplot` function is the basic workhorse of ggplot2
+
+- Produces all plot types available with ggplot2
+- Allows for plotting options within the function statement
+- Creates an object that can be saved
+- Plot layers can be added to modify plot complexity
+
+## `ggplot` Structure
+
+The `ggplot` function has the basic syntax:
+
+`ggplot(data, mappings) + geom_type(options)`
+
+- data: dataset to be used
+- mappings: determines which variables are connected to which plot elements, mappings are done with `aes()`
+- type: determines type of the plot, e.g. `point`, `line`, `bar`
+- options: there are so, so many options!
+
+## Scatterplots in `ggplot2`
+
+`aes` allows us to specify mappings; scatterplots need a mapping for `x` and a mapping for `y`:
+
+```{r, fig.width=3.5, fig.height=3.5}
+ggplot(data = fbiwide, aes(x = Burglary, y = Murder)) +
+  geom_point()
+```  
+
+## Example 1
+
+- Draw a scatterplot of the number of burglaries by murders.
+- Adjust the numbers of the above scatterplot to show log transformed numbers.
+- Draw a scatterplot of the log transformed number of burglaries by motor vehicle thefts.
+
+## Example 1
+
+```{r, fig.width=3.5, fig.height=3.5}
+ggplot(data = fbiwide, aes(x = log(Burglary), y = log(Murder))) +
+  geom_point()
+```
+
+## Example 1
+
+```{r, fig.width=3.5, fig.height=3.5}
+ggplot(data = fbiwide, aes(x = log(Burglary), y = log(Motor.vehicle.theft))) +
+  geom_point()
+```  
+
+## Aesthetics
+
+Can map other variables to size, colour, shape, ....
+
+```{r, fig.width=3.5, fig.height=3.5}
+ggplot(aes(x = log(Burglary), y = log(Motor.vehicle.theft),
+           colour=Year), data=fbiwide) + geom_point()
+```           
+
+## Example 2
+
+- Draw a scatterplot of the log transformed number of burglaries by motor vehicle thefts. Map the state variable to colour. Why is this a terrible idea?
+- Draw a scatterplot of the log transformed number of burglaries by motor vehicle thefts. Map Population to size. How do we interpret the output?
+- Which other aesthetics are there? Have a look at the [RStudio cheat sheet on visualization](https://www.rstudio.com/resources/cheatsheets/)
+
+## Example 2
+
+```{r}
+ggplot(data = fbiwide, aes(x = log(Burglary), y = log(Motor.vehicle.theft), colour = Year)) + geom_point()
+```
+
+## Example 2
+
+```{r}
+ggplot(data = fbiwide, aes(x = log(Burglary), y = log(Motor.vehicle.theft), colour = State)) + geom_point()
+```
+
+## Example 2
+
+```{r}
+ggplot(data = fbiwide, aes(x = log(Burglary), y = log(Motor.vehicle.theft), size = Population)) + geom_point() 
+```  
+
+## Facetting
+
+Can facet to display plots for different subsets:
+
+`facet_wrap`, `facet_grid`
+
+```{r, message=FALSE}
+ggplot(aes(x = Year, y = Murder), data=fbiwide) +
+  facet_wrap(~State, scale = "free_y") + 
+  geom_point()
+```
+
+## Setup of `facet_wrap` and `facet_grid`
+
+- `facet_grid` has formula specification: `rows ~ cols`
+- `facet_wrap` has specification `~ variables` 
+- multiple variables (in either specification) are included in form of a sum, i.e. `rowvar1 + rowvar2 ~ colvar1+ colvar2`
+- no variable (in `facet_grid`) is written as `.`, i.e. `rowvar ~ .` are plots in a single column.
+
+## Boxplots
+
+```{r, echo=FALSE, warning=FALSE, fig.width = 8, fig.height = 5}
+ggplot(data = fbi, aes(x = Type, y = log10(Count))) + geom_boxplot() + coord_flip()
+```
+
+## Boxplots
+
+- are used for group comparisons and outlier identifications
+- usually only make sense in form of side-by-side boxplots.
+- `geom_boxplot` in ggplot2 needs `x` and `y` variable (`y` is measurement, `x` is categorical)
+
+```{r, eval=FALSE}
+ggplot(data = fbi, aes(x = Type, y = log10(Count))) +
+  geom_boxplot() + 
+  coord_flip()
+```
+
+## Univariate plots
+
+Histograms: 
+
+```{r, fig.width=4, fig.height=3}
+ggplot(fbiwide, aes(x = Motor.vehicle.theft)) + 
+  geom_histogram(binwidth=5000) +
+  ggtitle("binwidth = 5000")
+```
+
+## Univariate plots
+
+Histograms: 
+
+```{r, fig.width=4, fig.height=3}
+ggplot(fbiwide, aes(x = Motor.vehicle.theft)) + 
+  geom_histogram(binwidth=1000) +
+  ggtitle("binwidth = 1000")
+```
+
+
+## Barchart
+
+```{r}
+ggplot(fbi, aes(x = Type)) + 
+  geom_bar(aes(weight= Count)) +
+  coord_flip()
+```
+
+
+## Example 3
+
+- Use the `fbi` data set to draw a barchart of the variable `Violent Crime`. Make the height of the bars dependent on the number of reports (use `weight`). Color bars by `Type`.
+- Use the `fbi` data set to draw a histogram of the number of reports. Facet by type, make sure to use individual scales for the panels.
+
+## Example 3
+
+```{r}
+ggplot(aes(x = Violent.crime), data=fbi) +
+  geom_bar(aes(weight= Count, fill = Type)) + coord_flip()
+```
+
+## Example 3
+
+```{r, message=FALSE, warning=FALSE}
+ggplot(aes(x = Count), data = fbi) + geom_histogram() +
+  facet_wrap(~Type, scales = "free")
+```
+
+## More on `ggplot2`
+
+- reference/document: http://ggplot2.tidyverse.org/reference/
+- RStudio cheat sheet for [ggplot2](https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf)
+- ggplot2 mailing list: 
+https://groups.google.com/forum/?fromgroups#!forum/ggplot2
+
+# Polishing plots
+
+## `ggplot2` provides defaults ...
+
+- but every aspect of the plot can be changed
+- colors are controlled through **scales**
+- **themes** control presentation of non-data elements
+
+## Color Scales
+
+default continuous colour scheme
+
+```{r, message = FALSE, fig.height =3}
+library(tidyverse)
+p1 <- mpg %>% filter(year == 2008) %>%
+  ggplot(aes(x = cty, y = hwy, colour = cyl)) +
+  geom_point()
+
+p1 + scale_colour_continuous()
+```
+
+## Color Scales
+
+default discrete colour scheme
+
+```{r, message = FALSE, fig.height =3}
+p2 <- mpg %>% filter(year == 2008) %>%
+  ggplot(aes(x = cty, y = hwy, colour = factor(cyl))) +
+  geom_point()
+
+p2 + scale_colour_discrete()
+```
+
+## Color Scales
+
+- Colors are controlled through scales
+`scale_colour_discrete` (`scale_colour_hue`) and `scale_colour_continuous` (`scale_colour_gradient`) are the default choices for factor variables and numeric variables
+- we can change parameters of the default scale, or we can change
+the scale function
+
+## Colour gradients
+
+`scale_colour_gradient (..., low = "#132B43", high = "#56B1F7", space = "Lab", na.value = "grey50", guide = “colourbar")`
+
+- colors can be specified by hex code, name or through rgb()
+- gradient goes from low to high - that should match the interpretation of the mapped variable
+
+
+## Colour gradients - divergent scheme
+
+`scale_colour_gradient2(..., low = muted("red"), mid = "white",  
+high = muted("blue"), midpoint = 0, space = "Lab", na.value = "grey50",  guide = "colourbar")`
+
+- midpoint is value of the ‘neutral’ color gradient2 is a divergent color scheme
+- best matches a variable that goes from large negative to zero to large positive (or below mean, above mean)
+
+
+## Discrete color schemes
+
+`scale_color_hue (..., h = c(0, 360) + 15, c = 100, l = 65, h.start = 0, direction = 1, na.value = "grey50")`
+
+- uses hue, chroma and luminance (=value)
+- each level of a variable is assigned a different level of h
+
+
+## Discrete color schemes - Brewer
+
+`scale_colour_brewer(..., type = "seq", palette = 1, direction = 1)`
+
+- brewer schemes are defined in RColorBrewer (Neuwirth, 2014) palettes can be specified by name or index
+- see also http://colorbrewer2.org/ (Brewer et al 2002)
+
+## All brewer schemes
+
+```{r, fig.height=6}
+library(RColorBrewer)
+display.brewer.all()
+```
+
+## Color and Fill
+
+- Area geoms (barcharts, histograms, polygons) use `fill` to map values to the fill color
+- continuous color scales: `scale_fill_gradient`, `scale_fill_gradient2`, ...
+- discrete color scales:  `scale_fill_hue`, `scale_fill_brewer`, `scale_fill_grey`, ...
+
+## Themes
+
+- Themes allow to control every aspect of non-data related aspects of a plot 
+- Several pre-defined themes: `theme_grey` (default), `theme_bw`, `theme_light`, `theme_dark`
+- Use `theme_set` if you want it to apply a theme to every future plot, e.g. `theme_set(theme_bw())`
+- `ggthemes` package defines additional themes: 
+`library(help = "ggthemes")` lists all themes
+
+## Example
+
+```{r}
+p <- mpg %>% ggplot(aes(x = displ, y =  cty, colour= factor(class))) + geom_point()
+```
+
+<p class="double">
+```{r, fig.width = 4, fig.height = 2}
+p + theme_grey()
+```
+```{r, fig.width = 4, fig.height = 2}
+p + theme_bw()
+```
+</p>
+
+## Example - more themes
+
+```{r}
+p <- mtcars %>% ggplot(aes(x = wt, y =  mpg, colour= factor(cyl))) + geom_point()
+```
+
+<p class="double">
+```{r, fig.width = 4, fig.height = 2}
+p + theme_light()
+```
+```{r, fig.width = 4, fig.height = 2}
+p + theme_dark()
+```
+
+</p>
+
+## More themes
+
+```{r}
+library(ggthemes)
+```
+
+<p class="double">
+```{r, fig.width = 4, fig.height = 2}
+p + theme_excel() 
+```
+```{r, fig.width = 4, fig.height = 2}
+p + theme_fivethirtyeight()
+```
+
+</p>
+
+## Elements
+
+- You can also make your own theme, or modify an existing.
+- Themes are made up of elements which can be one of:
+`element_line`,  `element_text`, `element_rect`,
+`element_blank`
+- Gives you a lot of control over plot appearance.
+
+## Elements of themes
+
+- Axis:  
+  `axis.line`, `axis.text.x`, `axis.text.y`, `axis.ticks`, `axis.title.x`, `axis.title.y`
+- Legend:  
+`legend.background`, `legend.key`, `legend.text`, `legend.title`
+- Panel:  
+`panel.background`, `panel.border`, `panel.grid.major`, `panel.grid.minor`
+- Strip (facetting):  
+`strip.background`, `strip.text.x`, `strip.text.y`
+
+for a complete overview see `?theme`
+
+
+## Changing elements manually
+
+- to change an element add the theme function and specify inside:
+- example:
+
+```{r, fig.width = 4, fig.height = 4}
+mpg %>% ggplot(aes(x = manufacturer)) + geom_bar() +
+  theme(axis.text.x = element_text(angle=45, vjust=1, hjust=1))
+```    
+
+
+# Web Scraping
+
+
+## The `rvest` package
+
+`read_html` gets *all* the information from a URL
+
+```{r warning = FALSE, message = FALSE}
+library(rvest)
+url <- "https://www.the-numbers.com/weekend-box-office-chart"
+html <- read_html(url)
+html
+```
+
+## Get a *table* from an online source
+
+`html_table` extracts all tables from the sourced html into a list of data frames:
+
+```{r}
+tables <- html %>% html_table(fill=TRUE)
+length(tables)
+```
+## Lists
+
+- `length()` accesses the number of items in a list
+- `[[ ]]` accesses each item
+
+```{r}
+dim(tables[[1]])
+dim(tables[[2]])
+
+head(tables[[2]])
+```
+
+##
+
+Most tables need a bit of clean-up:
+
+```{r}
+names(tables[[2]])
+
+names(tables[[2]])[1:2] <- c("Rank", "Rank.Last.Week")
+str(tables[[2]])
+box <- tables[[2]] %>% mutate(
+  Gross = parse_number(Gross),
+  Thtrs. = parse_number(Thtrs.)
+)
+head(box)
+```
+
+## Beyond tables
+
+Sometimes data on the web is not structured as nicely ... e.g. let's assume we want to get a list of all recently active baseball players from [Baseball reference](http://www.baseball-reference.com/players/)
+
+## Cascading Style Sheets (CSS)
+
+- [css](https://en.wikipedia.org/wiki/Cascading_Style_Sheets) is a language that describes the style of an HTML document.
+
+<img src="images/css-selectors-lrg.png" height=100, width=600>
+
+- Example: (https://www.w3schools.com/css/tryit.asp?filename=trycss_default)
+- play [the game](http://flukeout.github.io/)
+
+## SelectorGadget
+
+- SelectorGadget is a javascript bookmarklet to determine the [css](https://en.wikipedia.org/wiki/Cascading_Style_Sheets) selectors of pieces of a website we want to extract.
+- Read up on the [SelectorGadget](http://selectorgadget.com/) link: install it for your machine by installing the Chrome extension, then click on it to use it.
+- When SelectorGadget is active, pieces of the website are highlighted in orange/green/red.
+- Use SelectorGadget on http://www.baseball-reference.com/players/.
+- read more details on `vignette("selectorgadget")`
+
+## SelectorGadget Result
+
+```{r}
+url <- "http://www.baseball-reference.com/players/a/"
+html <- read_html(url)
+html %>% html_nodes("#div_players_ a") %>% head()
+```
+
+## Example 4
+
+We want to get access to pieces of the links:
+
+`html_text` allows us to get text out, `html_attr` let's us access an attribute of an html node, `html_attrs` extracts all attributes of an html node:
+
+
+```{r}
+html %>% html_nodes("#div_players_ a") %>% html_text() %>% head()
+html %>% html_nodes("#div_players_ a") %>% html_attr(name="href") %>% head()
+```
+
+
+## How to use the href?
+
+```{r}
+h1 = html %>% html_nodes("#div_players_ a") %>% html_attr(name="href")
+length(h1)
+h1[1]
+
+h0 = "http://www.baseball-reference.com"
+url.player = paste(h0, h1[1], sep = "")
+url.player
+```
+
+## Example 5
+
+Use the SelectorGadget on the website for [David Aardsma](http://www.baseball-reference.com/players/a/aardsda01.shtml)
+
+- Find the css description to extract his career statistics and load them into your R session.
+- Does the same code work to extract career statistics for (some of) the other players?
+- What other information do we need to know? and how can we get to that?
+
+## Solution (1)
+
+```{r}
+url <- "http://www.baseball-reference.com/players/a/aardsda01.shtml"
+html <- read_html(url)
+# good first start, but not good for further processing
+h2 = html %>% html_nodes(".stats_pullout p , h4")
+
+h3 = html %>% html_nodes(".p3 p , .p2 p , .p1 p , .stats_pullout strong , h4")
+
+```
+
+## Solution (2)
+
+```{r}
+# better: pull out individual vectors
+html %>% html_nodes("h4") %>% html_text()
+html %>% html_nodes(".stats_pullout p") %>% html_text() 
+```
+
+
+
